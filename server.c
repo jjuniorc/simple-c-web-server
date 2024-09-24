@@ -20,7 +20,8 @@
 #include <pthread.h>
 
 // global constants
-#define PORT 2001             // port to connect on
+#define LOGID "[C Web Server]"
+#define PORT 8001             // port to connect on - Underused port number checked against https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers
 #define LISTENQ 10            // number of connections
 
 int list_s;                   // listening socket
@@ -51,7 +52,7 @@ char *getMessage(int fd) {
     // Try to open the socket to the file stream and handle any failures
     if( (sstream = fdopen(fd, "r")) == NULL)
     {
-        fprintf(stderr, "Error opening file descriptor in getMessage()\n");
+        fprintf(stderr, "%s Error opening file descriptor in getMessage()\n", LOGID);
         exit(EXIT_FAILURE);
     }
     
@@ -63,7 +64,7 @@ char *getMessage(int fd) {
     // Allocate some memory for block and check it went ok
     if( (block = malloc(sizeof(char) * size)) == NULL )
     {
-        fprintf(stderr, "Error allocating memory to block in getMessage\n");
+        fprintf(stderr, "%s Error allocating memory to block in getMessage\n", LOGID);
         exit(EXIT_FAILURE);
     }
   
@@ -74,7 +75,7 @@ char *getMessage(int fd) {
     char *tmp;
     if( (tmp = malloc(sizeof(char) * size)) == NULL )
     {
-        fprintf(stderr, "Error allocating memory to tmp in getMessage\n");
+        fprintf(stderr, "%s Error allocating memory to tmp in getMessage\n", LOGID);
         exit(EXIT_FAILURE);
     }
     // Set tmp to null
@@ -123,7 +124,7 @@ char * getFileName(char* msg)
     // Allocate some memory for the filename and check it went OK
     if( (file = malloc(sizeof(char) * strlen(msg))) == NULL)
     {
-        fprintf(stderr, "Error allocating memory to file in getFileName()\n");
+        fprintf(stderr, "%s Error allocating memory to file in getFileName()\n", LOGID);
         exit(EXIT_FAILURE);
     }
     
@@ -134,7 +135,7 @@ char * getFileName(char* msg)
     char *base;
     if( (base = malloc(sizeof(char) * (strlen(file) + 18))) == NULL)
     {
-        fprintf(stderr, "Error allocating memory to base in getFileName()\n");
+        fprintf(stderr, "%s Error allocating memory to base in getFileName()\n", LOGID);
         exit(EXIT_FAILURE);
     }
     
@@ -162,7 +163,7 @@ httpRequest parseRequest(char *msg){
     // Allocate some memory to filename and check it goes OK
     if( (filename = malloc(sizeof(char) * strlen(msg))) == NULL)
     {
-        fprintf(stderr, "Error allocating memory to filename in parseRequest()\n");
+        fprintf(stderr, "%s Error allocating memory to filename in parseRequest()\n", LOGID);
         exit(EXIT_FAILURE);
     }
     // Find out what page they want
@@ -223,7 +224,7 @@ int printFile(int fd, char *filename) {
     FILE *read;
     if( (read = fopen(filename, "r")) == NULL)
     {
-        fprintf(stderr, "Error opening file in printFile()\n");
+        fprintf(stderr, "%s Error opening file in printFile()\n", LOGID);
         exit(EXIT_FAILURE);
     }
     
@@ -240,7 +241,7 @@ int printFile(int fd, char *filename) {
     char *temp;
     if(  (temp = malloc(sizeof(char) * size)) == NULL )
     {
-        fprintf(stderr, "Error allocating memory to temp in printFile()\n");
+        fprintf(stderr, "%s Error allocating memory to temp in printFile()\n", LOGID);
         exit(EXIT_FAILURE);
     }
     
@@ -268,11 +269,11 @@ int printFile(int fd, char *filename) {
 // clean up listening socket on ctrl-c
 void cleanup(int sig) {
     
-    printf("Cleaning up connections and exiting.\n");
+    printf("%s Cleaning up connections and exiting.\n", LOGID);
     
     // try to close the listening socket
     if (close(list_s) < 0) {
-        fprintf(stderr, "Error calling close()\n");
+        fprintf(stderr, "%s Error calling close()\n", LOGID);
         exit(EXIT_FAILURE);
     }
     
@@ -330,14 +331,14 @@ int main(int argc, char *argv[]) {
     
     // create the listening socket
     if ((list_s = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
-        fprintf(stderr, "Error creating listening socket.\n");
+        fprintf(stderr, "%s Error creating listening socket.\n", LOGID);
         exit(EXIT_FAILURE);
     }
 
     // Set the SO_REUSEADDR option on the socket
     int optval = 1;
     if (setsockopt(list_s, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
-        fprintf(stderr, "Error setting SO_REUSEADDR.\n");
+        fprintf(stderr, "%s Error setting SO_REUSEADDR.\n", LOGID);
         exit(EXIT_FAILURE);
     }
 
@@ -350,7 +351,7 @@ int main(int argc, char *argv[]) {
     
     // bind to the socket address
     if (bind(list_s, (struct sockaddr *) &servaddr, sizeof(servaddr)) < 0 ) {
-        fprintf(stderr, "Error calling bind()\n");
+        fprintf(stderr, "%s Error calling bind()\n", LOGID);
         exit(EXIT_FAILURE);
     }
 
@@ -358,7 +359,7 @@ int main(int argc, char *argv[]) {
     // Listen on socket list_s
     if( (listen(list_s, 10)) == -1)
     {
-        fprintf(stderr, "Error Listening\n");
+        fprintf(stderr, "%s Error Listening\n", LOGID);
         exit(EXIT_FAILURE);
     } 
     
@@ -372,7 +373,7 @@ int main(int argc, char *argv[]) {
     // Open the memory
     if( (sharedmem = shm_open("/sharedmem", O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR)) == -1)
     {
-        fprintf(stderr, "Error opening sharedmem in main() errno is: %s ", strerror(errno));
+        fprintf(stderr, "%s Error opening sharedmem in main() errno is: %s ", LOGID, strerror(errno));
         exit(EXIT_FAILURE);
     }
     
@@ -388,7 +389,7 @@ int main(int argc, char *argv[]) {
     // Check the memory allocation went OK
     if( mempointer == MAP_FAILED )
     {
-        fprintf(stderr, "Error setting shared memory for sharedVariables in recordTotalBytes() error is %d \n ", errno);
+        fprintf(stderr, "%s Error setting shared memory for sharedVariables in recordTotalBytes() error is %d \n ", LOGID, errno);
         exit(EXIT_FAILURE);
     }
     // Initalise the mutex
@@ -422,7 +423,7 @@ int main(int argc, char *argv[]) {
         // If the pid is -1 the fork failed so handle that
         if( pid == -1)
         {
-            fprintf(stderr,"can't fork, error %d\n" , errno);
+            fprintf(stderr,"%s can't fork, error %d\n", LOGID , errno);
             exit (1);
         }
         
@@ -438,7 +439,7 @@ int main(int argc, char *argv[]) {
                 // If something went wrong with accepting the connection deal with it
                 if(conn_s == -1)
                 {
-                    fprintf(stderr,"Error accepting connection \n");
+                    fprintf(stderr,"%s Error accepting connection \n", LOGID);
                     exit (1);
                 }
                 
@@ -461,7 +462,7 @@ int main(int argc, char *argv[]) {
                 totaldata = recordTotalBytes(headersize+pagesize, mempointer);
                 
                 // Print out which process handled the request and how much data was sent
-                printf("Process %d served a request of %d bytes. Total bytes sent %d  \n", getpid(), headersize+pagesize, totaldata);	
+                printf("%s Process %d served a request of %d bytes. Total bytes sent %d  \n", LOGID, getpid(), headersize+pagesize, totaldata);	
                 
                 // Close the connection now were done
                 close(conn_s);

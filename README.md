@@ -15,6 +15,6 @@ To run the server type ./server into a terminal that is in the directory where t
 
 By default the server runs on port 2001, so to try it out navigate to
 
-localhost:2001 in a webbrowser
+localhost:8001 in a webbrowser
 
-Calculator Test Application: http://localhost:2001/calc/index.html
+Calculator Test Application: http://localhost:8001/calc/index.html
