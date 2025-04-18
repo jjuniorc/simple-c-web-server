@@ -292,17 +292,18 @@ int printHeader(int fd, int returncode)
         case 200:
         sendMessage(fd, header200);
         return strlen(header200);
-        break;
         
         case 400:
         sendMessage(fd, header400);
         return strlen(header400);
-        break;
         
         case 404:
         sendMessage(fd, header404);
         return strlen(header404);
-        break;
+        
+        default:
+        sendMessage(fd, header400);
+        return strlen(header400);
     }
 }
 
@@ -398,7 +399,7 @@ int main(int argc, char *argv[]) {
     (*mempointer).totalbytes = 0;
 
     // Size of the address
-    int addr_size = sizeof(servaddr);
+    socklen_t addr_size = sizeof(servaddr);
     
     // Sizes of data were sending out
     int headersize;
@@ -434,7 +435,7 @@ int main(int argc, char *argv[]) {
             while(1)
             {
                 // Accept a connection
-                conn_s = accept(list_s, (struct sockaddr *)&servaddr, &addr_size);
+                conn_s = accept(list_s, (struct sockaddr *)&servaddr, (socklen_t *)&addr_size);
                     
                 // If something went wrong with accepting the connection deal with it
                 if(conn_s == -1)

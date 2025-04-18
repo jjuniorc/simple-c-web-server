@@ -18,3 +18,21 @@ By default the server runs on port 8001, so to try it out navigate to
 localhost:8001 in a webbrowser
 
 Calculator Test Application: http://localhost:8001/calc/index.html
+
+
+Compiling using CMakefile
+=================================
+To compile the server using CMake, you can use the following commands:
+
+```bash
+mkdir -p build
+cd build
+cmake ..
+make
+cd ..
+```
+This will create a `server` executable in the `build` directory. You can then run the server using the same command as above:
+
+```bash
+./build/server
+```

@@ -1,6 +1,11 @@
 # Ignore the compiled file
 server
 
+# Ignore CMake build files
+CMakeFiles/
+CMakeCache.txt
+build
+
 # Ignore any text editor backups
 *~
 
